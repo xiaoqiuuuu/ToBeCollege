@@ -18,7 +18,12 @@ class Matrix:
 
     def query(self, position: tuple):
         x1, y1, x2, y2 = position
-        return sum(self.matrix[i][j] for i in range(x1, x2 + 1) for j in range(y1, y2 + 1))
+        score = 0
+        for i in range(x1, x2 + 1):
+            for j in range(y1, y2 + 1):
+                if self.matrix[i][j] != 0:
+                    score += 1
+        return sum(self.matrix[i][j] for i in range(x1, x2 + 1) for j in range(y1, y2 + 1)), score
 
     def modify(self, position: tuple):
         x1, y1, x2, y2 = position

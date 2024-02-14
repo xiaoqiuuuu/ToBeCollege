@@ -1,4 +1,5 @@
 import json
+import math
 import random
 import threading
 import time
@@ -26,6 +27,7 @@ def monitor_window_position(window_title):
         return position
     return None
 
+
 def recognize_and_append(tile):
     data = json.loads(ocr_tool.recognize_digits(tile.image))
     digit = data['words_result'][0]['words']
@@ -44,7 +46,6 @@ if __name__ == "__main__":
     image_processor = ImageProcessor(image_path)
     tiles = image_processor.split_image()
 
-
     # 线程数量
     thread_num = 3
     # 文字识别
@@ -60,6 +61,7 @@ if __name__ == "__main__":
                 future.result()
             except Exception as exc:
                 print(f"处理Tile时发生错误: {exc}")
+                exit(0)
 
     matrix = Matrix(digits)
 
@@ -97,7 +99,8 @@ if __name__ == "__main__":
         pyautogui.dragTo(end_x, end_y, duration=0.25, button='left')  # 可以根据需要调整duration参数来控制拖拽的速度
 
 
-    def check_clear(x, y):
+    def check_clear(x, y, xs):
+
         for i in range(1, n + 1):
             if x + i - 1 > n:
                 break
@@ -105,19 +108,34 @@ if __name__ == "__main__":
                 if j + y - 1 > m:
                     break
 
-                res = matrix.query((x, y, x + i - 1, y + j - 1))
+                res, score = matrix.query((x, y, x + i - 1, y + j - 1))
 
                 if res == 10:
                     x2 = x + i - 1
                     y2 = y + j - 1
+
+                    if xs < score:
+                        return True
+                    print(f"本次得分{score}")
                     clear(tiles[(x - 1) * m + y - 1], tiles[(x2 - 1) * m + y2 - 1])
                     matrix.modify((x, y, x2, y2))
 
+                    return True
+
                 if res > 10:
                     break
+        return False
 
 
-    for _ in range(100):
+    xs = 2.00
+    while True:
+        flg = 0
         for i in range(1, 17):
             for j in range(1, 11):
-                check_clear(i, j)
+                flg |= check_clear(i, j, xs)
+        if flg == 0:
+            break
+        xs += 0.05
+
+    print(f"游戏结束，本次得分为{160 - matrix.query((1,1,16,10))[1]}")
+
