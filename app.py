@@ -1,5 +1,7 @@
 import json
 import random
+import threading
+import time
 
 from CaptureWindow import CaptureWindow
 from ImageProcessor import ImageProcessor
@@ -8,6 +10,7 @@ from Tile import Tile
 import pyautogui
 from pygetwindow import getWindowsWithTitle
 from OCRTool import OCRTool
+import concurrent.futures
 
 
 def monitor_window_position(window_title):
@@ -20,8 +23,15 @@ def monitor_window_position(window_title):
 
         # 这里您可以处理窗口位置信息（例如，记录或触发事件）
         # print(f"窗口 '{window_title}' 的当前位置: {position}")
+        return position
+    return None
 
-    return position
+def recognize_and_append(tile):
+    data = json.loads(ocr_tool.recognize_digits(tile.image))
+    digit = data['words_result'][0]['words']
+    digits[tile.id] = int(digit)  # 注意：假设tile.id是从1开始计数的，需要减1来匹配digits的索引
+    print(f"线程ID: {threading.get_ident()} 正在识别第{tile.id}个数字：{digit}")
+    time.sleep(0.1)
 
 
 if __name__ == "__main__":
@@ -34,28 +44,29 @@ if __name__ == "__main__":
     image_processor = ImageProcessor(image_path)
     tiles = image_processor.split_image()
 
-    # 文字识别
-    # 创建 OCRTool，将数字图片识别到 10 * 64 的矩阵中
-    digits = []
-    ocr_tool = OCRTool()
-    id = 1
-    for tile in tiles:
-        data = json.loads(ocr_tool.recognize_digits(tile.image))
-        digit = data['words_result'][0]['words']
-        digits.append(int(digit))
-        print(f"正在识别第{id}个数字：{digit}")
-        id += 1
 
-    # 随机一点数据用于测试
-    while len(digits) < 160:
-        digits.append(random.randint(1, 9))
+    # 线程数量
+    thread_num = 3
+    # 文字识别
+    # 创建 OCRTool，将数字图片识别到 10 * 16 的矩阵中
+    digits = [0 for i in range(len(tiles))]
+    tiles_parts = [tiles[i:i + len(tiles) // thread_num] for i in range(0, len(tiles), len(tiles) // thread_num)]
+
+    ocr_tool = OCRTool()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=thread_num) as executor:
+        futures = {executor.submit(recognize_and_append, tile): tile for part in tiles_parts for tile in part}
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as exc:
+                print(f"处理Tile时发生错误: {exc}")
 
     matrix = Matrix(digits)
 
     n = matrix.n
     m = matrix.m
 
-    # matrix.show()
+    matrix.show()
 
 
     def clear(a: Tile, b: Tile):
@@ -76,7 +87,7 @@ if __name__ == "__main__":
         end_x = position[0] + b_x
         end_y = position[1] + b_y
 
-        #print(position[0], position[1])
+        # print(position[0], position[1])
         print("start_x:", start_x, "start_y", start_y, "end_x:", end_x, "end_y:", end_y)
 
         # 首先单击开始位置（相当于按下鼠标左键）
@@ -104,6 +115,7 @@ if __name__ == "__main__":
 
                 if res > 10:
                     break
+
 
     for _ in range(100):
         for i in range(1, 17):

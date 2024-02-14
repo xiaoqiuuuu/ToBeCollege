@@ -1,9 +1,12 @@
 import base64
+import json
 import urllib
 import requests
 from PIL import Image
 import io
 
+API_KEY = "替换为你自己的 API_KEY"
+SECRET_KEY = "替换为你自己的 SECRET_KEY"
 
 
 

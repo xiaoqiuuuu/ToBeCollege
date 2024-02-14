@@ -7,11 +7,12 @@ from PIL import Image
 
 
 class Tile:
-    def __init__(self, image, position, name="tile_picture"):
+    def __init__(self, image, position,  image_id,name="tile_picture"):
         self.image = image
         self.position = position
         self.name = name
-
+        self.id = image_id
+        self.num = None
     def get_position(self):
         return self.position
 
