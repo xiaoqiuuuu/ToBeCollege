@@ -1,6 +1,6 @@
-'''
+"""
 该文件实现了一个Tile类，用于保存经过ImageProcessor处理后的图像块，和每个图像块位置信息
-'''
+"""
 import os.path
 
 from PIL import Image

@@ -42,3 +42,5 @@ class CaptureWindow:
 
         # 裁剪截图
         CaptureWindow.crop_bottom(image_path, percent_to_keep)
+
+        return image_path
