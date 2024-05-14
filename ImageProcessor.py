@@ -17,19 +17,21 @@ class ImageProcessor:
         self.image.show()
 
     # split_image 将 image 分割成 10 * 16 份,返回一个 Tile 对象列表
-    def split_image(self, tile_size=(42, 42), begin_position=(12, 10), delta=(17, 12, 35, 35)):
+    def split_image(self, begin_position=(15, 15), delta=(10, 10, 40, 40)):
         width, height = self.image.size
+        height = height // 17 * 16
+        tile_size = (width // 10 - 3 , height // 16 - 1 )
         tiles = []
 
         id = 0
-        for y in range(begin_position[0], height - tile_size[0], tile_size[0]):
-            for x in range(begin_position[1], width - tile_size[1], tile_size[1]):
+        for y in range(begin_position[0], height - 20, tile_size[1]):
+            for x in range(begin_position[1], width - 20, tile_size[0]):
                 tile_picture = self.image.crop((x, y, x + tile_size[0], y + tile_size[1]))
                 tile_picture = tile_picture.crop(delta)
                 tile_picture = ImageOps.invert(tile_picture)
                 tile = Tile(tile_picture, (x + delta[0], y + delta[1], x + delta[2], y + delta[3]), id,
                             "tile_picture{:03d}".format(id))
-                # tile.save_image("Images")
+                tile.save_image("Images")
                 tiles.append(tile)
                 id += 1
         return tiles

@@ -46,6 +46,8 @@ if __name__ == "__main__":
     image_processor = ImageProcessor(image_path)
     tiles = image_processor.split_image()
 
+    print(len(tiles))
+
     # 线程数量
     thread_num = 3
     # 文字识别
@@ -83,11 +85,11 @@ if __name__ == "__main__":
 
         # 开始拖拽的位置
         start_x = position[0] + a_x
-        start_y = position[1] + a_y
+        start_y = position[1] + a_y + 15
 
         # 拖拽结束的位置
         end_x = position[0] + b_x
-        end_y = position[1] + b_y
+        end_y = position[1] + b_y + 15
 
         # print(position[0], position[1])
         print("start_x:", start_x, "start_y", start_y, "end_x:", end_x, "end_y:", end_y)
